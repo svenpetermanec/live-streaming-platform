@@ -101,7 +101,8 @@ func buildCommand(streamId string, config config.HLSConfig) (*exec.Cmd, error) {
 
 			// HLS output
 			"-f", "hls",
-			"-hls_time", "2",
+			"-hls_time", "4",
+			"-hls_list_size", "0",
 			"-hls_segment_filename",
 			filepath.Join(streamDir, r.Name, "segment_%03d.ts"),
 			filepath.Join(streamDir, r.Name, "playlist.m3u8"),
