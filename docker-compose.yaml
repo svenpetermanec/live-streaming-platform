@@ -21,6 +21,7 @@ services:
       - srt_network
     volumes:
       - hls-streams-volume:/app/streams
+    env_file: ".env"
 
 volumes:
   hls-streams-volume:

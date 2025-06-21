@@ -7,8 +7,6 @@ import (
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
-
-	"transcoder/transcoder/cmd/config"
 )
 
 type Level string
@@ -121,8 +119,8 @@ func mapParamsIntoKeyValues(params Data) []interface{} {
 	return args
 }
 
-func NewLogger() *Logger {
-	levelFromString, err := LevelFromString(config.Cfg.LogLevel)
+func NewLogger(level string) *Logger {
+	levelFromString, err := LevelFromString(level)
 	if err != nil {
 		log.Fatal(err)
 	}
