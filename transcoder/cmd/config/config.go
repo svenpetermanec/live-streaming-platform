@@ -10,9 +10,10 @@ import (
 var Cfg Config
 
 type Config struct {
-	LogLevel string    `split_words:"true" required:"true" default:"INFO"`
-	SRT      SRTConfig `split_words:"true" required:"true"`
-	HLS      HLSConfig `split_words:"true" required:"true"`
+	LogLevel string      `split_words:"true" required:"true" default:"INFO"`
+	SRT      SRTConfig   `split_words:"true" required:"true"`
+	HLS      HLSConfig   `split_words:"true" required:"true"`
+	Redis    RedisConfig `split_words:"true" required:"true"`
 }
 
 type SRTConfig struct {
@@ -32,6 +33,11 @@ type Resolution struct {
 	Height    int    `split_words:"true" required:"true"`
 	Framerate int    `split_words:"true" required:"true"`
 	Bitrate   string `split_words:"true" required:"true"`
+}
+
+type RedisConfig struct {
+	Address  string `split_words:"true" required:"true"`
+	Database int    `split_words:"true" required:"true"`
 }
 
 func Load() {

@@ -12,6 +12,7 @@ type Config struct {
 	LogLevel   string           `split_words:"true" required:"true" default:"INFO"`
 	HTTPServer HTTPServerConfig `split_words:"true" required:"true"`
 	HLS        HLSConfig        `split_words:"true" required:"true"`
+	Redis      RedisConfig      `split_words:"true" required:"true"`
 }
 
 type HTTPServerConfig struct {
@@ -22,6 +23,11 @@ type HTTPServerConfig struct {
 
 type HLSConfig struct {
 	OutputDir string `split_words:"true" required:"true"`
+}
+
+type RedisConfig struct {
+	Address  string `split_words:"true" required:"true"`
+	Database int    `split_words:"true" required:"true"`
 }
 
 func Load() {

@@ -12,14 +12,13 @@ import (
 )
 
 type Transcoder struct {
-	streamId    string
 	ffmpegCmd   *exec.Cmd
 	ffmpegStdin io.WriteCloser
 	isActive    bool
 }
 
-func NewTranscoder(streamId string, config config.HLSConfig) (*Transcoder, error) {
-	cmd, err := buildCommand(streamId, config)
+func NewTranscoder(streamName string, config config.HLSConfig) (*Transcoder, error) {
+	cmd, err := buildCommand(streamName, config)
 	if err != nil {
 		return nil, err
 	}
@@ -35,16 +34,15 @@ func NewTranscoder(streamId string, config config.HLSConfig) (*Transcoder, error
 	}
 
 	return &Transcoder{
-		streamId:    streamId,
 		ffmpegCmd:   cmd,
 		ffmpegStdin: stdin,
 		isActive:    true,
 	}, nil
 }
 
-func buildDirectories(streamId string, config config.HLSConfig) (string, error) {
+func buildDirectories(streamName string, config config.HLSConfig) (string, error) {
 	timestamp := time.Now().Format(time.RFC3339)
-	streamDir := filepath.Join(config.OutputDir, streamId, timestamp)
+	streamDir := filepath.Join(config.OutputDir, streamName, timestamp)
 
 	for _, r := range config.Resolutions {
 		if err := os.MkdirAll(filepath.Join(streamDir, r.Name), os.ModePerm); err != nil {
@@ -66,8 +64,8 @@ func (t *Transcoder) Stop() error {
 	return t.ffmpegCmd.Wait()
 }
 
-func buildCommand(streamId string, config config.HLSConfig) (*exec.Cmd, error) {
-	streamDir, err := buildDirectories(streamId, config)
+func buildCommand(streamName string, config config.HLSConfig) (*exec.Cmd, error) {
+	streamDir, err := buildDirectories(streamName, config)
 	if err != nil {
 		return nil, err
 	}

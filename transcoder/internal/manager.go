@@ -1,6 +1,8 @@
 package internal
 
 import (
+	"context"
+
 	"github.com/haivision/srtgo"
 
 	"transcoder/internal/logging"
@@ -8,19 +10,28 @@ import (
 )
 
 type Manager struct {
-	logger *logging.Logger
+	repository *Repository
+	logger     *logging.Logger
 }
 
-func NewSrtManager(logger *logging.Logger) *Manager {
+func NewSrtManager(repository *Repository, logger *logging.Logger) *Manager {
 	return &Manager{
-		logger: logger,
+		repository: repository,
+		logger:     logger,
 	}
 }
 
-func (s *Manager) HandleNewStream(stream *srtgo.SrtSocket, streamID string) {
-	transcoder, err := NewTranscoder(streamID, config.Cfg.HLS)
+func (s *Manager) HandleNewStream(ctx context.Context, stream *srtgo.SrtSocket, streamId string) {
+	streamName, err := s.repository.GetStreamName(ctx, streamId)
 	if err != nil {
-		s.logger.Error("Problem creating transcoder", logging.Data{"streamId": streamID, "error": err})
+		s.logger.Error("Problem fetching stream name", logging.Data{"stream": streamId, "error": err})
+		stream.Close()
+		return
+	}
+
+	transcoder, err := NewTranscoder(streamName, config.Cfg.HLS)
+	if err != nil {
+		s.logger.Error("Problem creating transcoder", logging.Data{"streamName": streamName, "error": err})
 		stream.Close()
 		return
 	}
@@ -33,7 +44,7 @@ func (s *Manager) HandleNewStream(stream *srtgo.SrtSocket, streamID string) {
 			size, err := stream.Read(buffer)
 			if err != nil {
 				// switch to metric
-				s.logger.Warn("Problem reading stream", logging.Data{"streamId": streamID, "error": err})
+				s.logger.Warn("Problem reading stream", logging.Data{"streamName": streamName, "error": err})
 			}
 
 			if size == 0 {
@@ -42,13 +53,13 @@ func (s *Manager) HandleNewStream(stream *srtgo.SrtSocket, streamID string) {
 			}
 
 			if err = transcoder.Write(buffer[:size]); err != nil {
-				s.logger.Error("Problem transcoding", logging.Data{"streamId": streamID, "error": err})
+				s.logger.Error("Problem transcoding", logging.Data{"streamName": streamName, "error": err})
 				break
 			}
 		}
 
 		if err = transcoder.Stop(); err != nil {
-			s.logger.Warn("Problem stopping transcoder", logging.Data{"streamId": streamID, "error": err})
+			s.logger.Warn("Problem stopping transcoder", logging.Data{"streamName": streamName, "error": err})
 		}
 	}()
 }

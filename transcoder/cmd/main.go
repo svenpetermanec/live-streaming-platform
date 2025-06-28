@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 
+	"github.com/redis/go-redis/v9"
+
 	"transcoder/internal/guard"
 	"transcoder/internal/logging"
 	"transcoder/transcoder/cmd/config"
@@ -16,8 +18,18 @@ func main() {
 
 	guard.CapturePanic(logger)
 
+	redisClient := redis.NewClient(
+		&redis.Options{
+			Addr: config.Cfg.Redis.Address,
+			DB:   config.Cfg.Redis.Database,
+		},
+	)
+
 	srtServer := internal.NewSrtServer(
-		internal.NewSrtManager(logger),
+		internal.NewSrtManager(
+			internal.NewRepository(redisClient),
+			logger,
+		),
 		logger,
 		config.Cfg.SRT,
 	)

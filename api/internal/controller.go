@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"crypto/rand"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -13,13 +14,15 @@ import (
 
 type Controller struct {
 	fileServer http.Handler
+	repository *Repository
 	config     config.Config
 	logger     *logging.Logger
 }
 
-func NewController(config config.Config, logger *logging.Logger) *Controller {
+func NewController(repository *Repository, config config.Config, logger *logging.Logger) *Controller {
 	return &Controller{
 		fileServer: http.StripPrefix("/streams", http.FileServer(http.Dir(config.HLS.OutputDir))),
+		repository: repository,
 		config:     config,
 		logger:     logger,
 	}
@@ -45,7 +48,7 @@ func (c *Controller) ServeStream(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// middleware
+	// TODO: middleware
 	w.Header().Set("Access-Control-Allow-Origin", c.config.HTTPServer.CORSOrigin)
 	w.Header().Set("Access-Control-Allow-Methods", strings.Join(c.config.HTTPServer.CORSMethods, ","))
 
@@ -58,7 +61,25 @@ func (c *Controller) ServeStream(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *Controller) CreateAccount(w http.ResponseWriter, r *http.Request) {
-	// TODO: generate stream key
+	if r.Method != "POST" {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	}
+
+	username := r.URL.Query().Get("username")
+	if username == "" {
+		http.Error(w, "Missing username", http.StatusBadRequest)
+	}
+
+	streamId := rand.Text()
+	err := c.repository.SetStreamName(r.Context(), streamId, username)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
+	w.Header().Set("Access-Control-Allow-Origin", c.config.HTTPServer.CORSOrigin)
+	w.Header().Set("Access-Control-Allow-Methods", strings.Join(c.config.HTTPServer.CORSMethods, ","))
+
+	fmt.Fprintf(w, "Account created, stream id: %s\n", streamId)
 }
 
 func sanitizePath(rawPath string) (string, error) {

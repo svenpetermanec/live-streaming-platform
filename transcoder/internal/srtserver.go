@@ -67,7 +67,7 @@ func (s *SrtServer) Start(ctx context.Context) {
 
 			streamId := s.sourceToStreamMap[addr.IP.String()+addr.AddrPort().String()]
 
-			s.manager.HandleNewStream(socket, streamId)
+			s.manager.HandleNewStream(ctx, socket, streamId)
 		}
 	}
 }

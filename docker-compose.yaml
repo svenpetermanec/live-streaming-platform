@@ -23,8 +23,18 @@ services:
       - hls-streams-volume:/app/streams
     env_file: ".env"
 
+  redis:
+    image: "redis:alpine"
+    ports:
+      - "6379:6379"
+    networks:
+      - srt_network
+    volumes:
+      - redis-users-volume:/data
+
 volumes:
   hls-streams-volume:
+  redis-users-volume:
 
 networks:
   srt_network:
