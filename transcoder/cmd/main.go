@@ -26,7 +26,7 @@ func main() {
 	)
 
 	srtServer := internal.NewSrtServer(
-		internal.NewSrtManager(
+		internal.NewManager(
 			internal.NewRepository(redisClient),
 			logger,
 		),

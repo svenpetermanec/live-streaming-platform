@@ -14,7 +14,7 @@ type Manager struct {
 	logger     *logging.Logger
 }
 
-func NewSrtManager(repository *Repository, logger *logging.Logger) *Manager {
+func NewManager(repository *Repository, logger *logging.Logger) *Manager {
 	return &Manager{
 		repository: repository,
 		logger:     logger,
